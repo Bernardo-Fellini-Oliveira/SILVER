@@ -33,7 +33,7 @@ class Shapley:
             
             for feature in self.F:
 
-                for C in F_not_i(self.F, feature): # All coalitions without feature
+                for C in F_not_i(self.F, int(feature)): # All coalitions without feature
 
                     # Cardinal of C
                     C_card = len(C)
@@ -52,18 +52,18 @@ class Shapley:
                         diff_C_value = th.distributions.Normal(loc=mean_diff, scale=std_diff)
                         
                         # Shapley value mean and stddev value:
-                        shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature].append(np.math.factorial(C_card) * np.math.factorial(self.F_card - C_card - 1) * diff_C_value.mean)
-                        shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature].append(np.math.factorial(C_card) * np.math.factorial(self.F_card - C_card - 1) * diff_C_value.stddev)
+                        shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature].append(math.factorial(C_card) * math.factorial(self.F_card - C_card - 1) * diff_C_value.mean)
+                        shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature].append(math.factorial(C_card) * math.factorial(self.F_card - C_card - 1) * diff_C_value.stddev)
 
                     else:
-                        shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature].append(np.math.factorial(C_card) * np.math.factorial(self.F_card - C_card - 1) * (C_values[tuple(C_with_i)] - C_values[tuple(C)]))
+                        shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature].append(math.factorial(C_card) * math.factorial(self.F_card - C_card - 1) * (C_values[tuple(C_with_i)] - C_values[tuple(C)]))
 
                 # Final weighting and return
                 if isinstance(C_values[tuple(C)], th.distributions.Normal):
-                    shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.sum(th.stack(shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature]), axis=0) / np.math.factorial(self.F_card)
-                    shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.sum(th.stack(shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature]), axis=0) / np.math.factorial(self.F_card)
+                    shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.sum(th.stack(shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature]), axis=0) / math.factorial(self.F_card)
+                    shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.sum(th.stack(shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature]), axis=0) / math.factorial(self.F_card)
                     shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.distributions.Normal(shapley_mean[tuple(np.round(tuple(state.tolist()), 2))][feature], shapley_stddev[tuple(np.round(tuple(state.tolist()), 2))][feature])
                 else:
-                    shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.sum(th.stack(shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature]), axis=0) / np.math.factorial(self.F_card)
+                    shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature] = th.sum(th.stack(shapley_values[tuple(np.round(tuple(state.tolist()), 2))][feature]), axis=0) / math.factorial(self.F_card)
 
         return dict(shapley_values)

@@ -4,6 +4,8 @@ from collections import defaultdict
 import numpy as np
 import torch as th
 from torch.distributions.normal import Normal
+import gymnasium as gym
+import itertools
 
 
 from stable_baselines3.common.env_util import make_vec_env
@@ -11,7 +13,25 @@ from stable_baselines3.common.env_util import make_vec_env
 # Specific device
 device = th.device("cuda:0" if th.cuda.is_available() else "cpu")
 
+class FlatDiscretizeWrapper(gym.ActionWrapper):
+    def __init__(self, env: gym.Env, bins_per_dim: int = 5):
+        super().__init__(env)
+        assert isinstance(env.action_space, gym.spaces.Box)
         
+        low = env.action_space.low
+        high = env.action_space.high
+        dims = env.action_space.shape[0]
+        
+        # Create 1D bins for each dimension, then take the Cartesian product
+        axes = [np.linspace(low[i], high[i], bins_per_dim) for i in range(dims)]
+        self.action_map = np.array(list(itertools.product(*axes)), dtype=np.float32)
+        
+        # Exposes a single integer action space: Discrete(bins_per_dim ** dims)
+        self.action_space = gym.spaces.Discrete(len(self.action_map))
+
+    def action(self, act: int) -> np.ndarray:
+        return self.action_map[act]
+       
 def get_state_dist(model, vec_env, sample_size):
     """
     Approximates the limiting state distribution.
